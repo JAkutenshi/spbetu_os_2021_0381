@@ -3,7 +3,7 @@
 #git fetch leoI0II         # Дзаппала      
 git fetch NikitaEfimov0   # Ефимов        
 #git fetch Philipoff       # Захаров       
-#git fetch BrodyWar        # Ибатов        
+git fetch BrodyWar        # Ибатов        
 #git fetch IoninaKsu       # Ионина        
 #git fetch KiriltsevDaniil # Кирильцев     
 #git fetch Pavel7004       # Ковалёв       
@@ -13,7 +13,7 @@ git fetch elithium4       # Короткина
 #git fetch magnitovsergey  # Магнитов      
 #git fetch V1xtor          # Михайлов      
 #git fetch Pavloveuge      # Павлов        
-#git fetch lexapech        # Печеркин      
+git fetch lexapech        # Печеркин      
 #git fetch Timur0381       # Просекин      
 #git fetch Lixonik         # Прохоров      
 git fetch RichSweetWafer  # Самойлов      
