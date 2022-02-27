@@ -1,6 +1,6 @@
 #git fetch vlad72002       # Балакин       
 #git fetch vbezuprechnaya  # Березовская   
-#git fetch leoI0II         # Дзаппала      
+git fetch leoI0II         # Дзаппала      
 git fetch NikitaEfimov0   # Ефимов        
 #git fetch Philipoff       # Захаров       
 git fetch BrodyWar        # Ибатов        
