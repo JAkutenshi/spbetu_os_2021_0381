@@ -304,7 +304,7 @@ DATA      SEGMENT
    flag db 0
    flag_load db 0
 
-   STR_IST_LOAD  DB 'Interrupt is not load', 0AH, 0DH,'$'
+   STR_IST_LOAD  DB 'Interrupt is not loaded', 0AH, 0DH,'$'
    STR_ALR_LOAD  DB 'Interrupt is already loaded', 0AH, 0DH,'$'
    STR_SUC_LOAD  DB 'Interrupt has been loaded', 0AH, 0DH,'$'
    STR_IS_UNLOAD  DB 'Interrupt is unloaded', 0AH, 0DH,'$'
