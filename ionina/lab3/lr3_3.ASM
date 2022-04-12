@@ -3,7 +3,7 @@ TESTPC SEGMENT
    ORG 100H
 START: JMP BEGIN
 
-; ÑÄççõÖ
+; –î–ê–ù–ù–´–ï
     AVAILABLE_MEMORY db 0Dh,0Ah,'Size of available memory:       $'
     EXTENDED_MEMORY db 0Dh,0Ah,'Size of extended memory:   $'
     BYTES_STR db ' byte $'
@@ -21,7 +21,7 @@ START: JMP BEGIN
     MSB_SCSD db 'SC/SD: $' 
     NEWLINE db 0Dh,0Ah,'$'
 
-;èêéñÖÑìêõ
+;–ü–†–û–¶–ï–î–£–†–´
 ;-----------------------------------------------------
 TETR_TO_HEX PROC near
   	and AL,0Fh
@@ -35,21 +35,21 @@ next:
 TETR_TO_HEX ENDP
 ;-----------------------------------------------------
 BYTE_TO_HEX PROC near
-; °†©‚ ¢ AL Ø•‡•¢Æ§®‚·Ô ¢ §¢† ·®¨¢Æ´† Ë•·‚≠. Á®·´† ¢ AX 
+; –±–∞–π—Ç –≤ AL –ø–µ—Ä–µ–≤–æ–¥–∏—Ç—Å—è –≤ –¥–≤–∞ —Å–∏–º–≤–æ–ª–∞ —à–µ—Å—Ç–Ω. —á–∏—Å–ª–∞ –≤ AX 
    	push CX
    	mov AH,AL
    	call TETR_TO_HEX
    	xchg AL,AH
    	mov CL,4
    	shr AL,CL
-  	 call TETR_TO_HEX 	;¢ AL ·‚†‡Ë†Ô Ê®‰‡† 
-   	pop CX 		;¢ AH ¨´†§Ë†Ô	
+  	 call TETR_TO_HEX 	;–≤ AL —Å—Ç–∞—Ä—à–∞—è —Ü–∏—Ñ—Ä–∞ 
+   	pop CX 		;–≤ AH –º–ª–∞–¥—à–∞—è		
    	ret
 BYTE_TO_HEX ENDP
 ;-----------------------------------------------------
 WRD_TO_HEX PROC near
-;Ø•‡•¢Æ§ ¢ 16 ·/· 16-‚® ‡†ß‡Ô§≠Æ£Æ Á®·´†
-; ¢ AX - Á®·´Æ, DI - †§‡•· ØÆ·´•§≠•£Æ ·®¨¢Æ´† 
+;–ø–µ—Ä–µ–≤–æ–¥ –≤ 16 —Å/—Å 16-—Ç–∏ —Ä–∞–∑—Ä—è–¥–Ω–æ–≥–æ —á–∏—Å–ª–∞
+; –≤ AX - —á–∏—Å–ª–æ, DI - –∞–¥—Ä–µ—Å –ø–æ—Å–ª–µ–¥–Ω–µ–≥–æ —Å–∏–º–≤–æ–ª–∞  
    	push BX
    	mov BH,AH
    	call BYTE_TO_HEX
@@ -67,7 +67,7 @@ WRD_TO_HEX PROC near
 WRD_TO_HEX ENDP
 ;-----------------------------------------------------
 BYTE_TO_DEC PROC near
-; Ø•‡•¢Æ§ ¢ 10·/·, SI - †§‡•· ØÆ´Ô ¨´†§Ë•© Ê®‰‡Î 
+; –ø–µ—Ä–µ–≤–æ–¥ –≤ 10—Å/—Å, SI - –∞–¥—Ä–µ—Å –ø–æ–ª—è –º–ª–∞–¥—à–µ–π —Ü–∏—Ñ—Ä—ã
    	push CX
    	push DX
    	xor AH,AH
@@ -128,7 +128,7 @@ nxt:
 	or ax, dx
 	pop ax
 	jnz nxt
-	;ÇÎ¢Æ§
+	;–í—ã–≤–æ–¥
 	mov ah, 02h
 
 output:
@@ -312,7 +312,7 @@ fin:
 MCB_CHAIN ENDP
 ;-------------------------------
 
-; äéÑ
+; –ö–û–î
 BEGIN:
 	mov bx, 4096
 	mov ah, 4Ah
@@ -330,4 +330,4 @@ BEGIN:
 	mov AH,4Ch
 	int 21h
 TESTPC ENDS
-END START	;™Æ≠•Ê ¨Æ§„´Ô, START - ‚ÆÁ™† ¢ÂÆ§†
+END START	;–∫–æ–Ω–µ—Ü –º–æ–¥—É–ª—è, START - —Ç–æ—á–∫–∞ –≤—Ö–æ–¥–∞
