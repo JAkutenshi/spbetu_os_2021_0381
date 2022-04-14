@@ -18,15 +18,15 @@ PRINT PROC near
     	ret
 PRINT ENDP
 
-;функция вывода строки по адресу ES:BP на экран 
+;С„СѓРЅРєС†РёСЏ РІС‹РІРѕРґР° СЃС‚СЂРѕРєРё РїРѕ Р°РґСЂРµСЃСѓ ES:BP РЅР° СЌРєСЂР°РЅ 
 outputBP proc
     	push ax
     	push bx
     	push dx
     	push CX
-    	mov ah,13h	; функция
-    	mov al,1	; sub function code
-    	mov bh,0	; видео страница
+    	mov ah,13h	; С„СѓРЅРєС†РёСЏ
+    	mov al,1	;sub function code
+    	mov bh,0	; РІРёРґРµРѕ СЃС‚СЂР°РЅРёС†Р°
     	int 10h
     	pop CX
     	pop dx
@@ -35,8 +35,8 @@ outputBP proc
     	ret
 outputBP endp
 
-; Установка позиции курсора
-; установка на строку 25 делает курсор невидимым 
+; РЈСЃС‚Р°РЅРѕРІРєР° РїРѕР·РёС†РёРё РєСѓСЂСЃРѕСЂР°
+; СѓСЃС‚Р°РЅРѕРІРєР° РЅР° СЃС‚СЂРѕРєСѓ 25 РґРµР»Р°РµС‚ РєСѓСЂСЃРѕСЂ РЅРµРІРёРґРёРјС‹Рј 
 setCurs proc
 
     	push ax
@@ -45,7 +45,7 @@ setCurs proc
     	push CX
     	mov ah,02h
     	mov bh,0
-    	int 10h	; выполнение
+    	int 10h	 ;РІС‹РїРѕР»РЅРµРЅРёРµ
     	pop CX
     	pop dx
     	pop bx
@@ -60,7 +60,7 @@ getCurs proc
    	push CX
     	mov ah,03h
     	mov bh,0
-   	int 10h	; выполнение
+   	int 10h	 ;РІС‹РїРѕР»РЅРµРЅРёРµ
     	pop CX
     	pop bx
     	pop ax
@@ -101,7 +101,7 @@ COUNTER_UPDATE PROC
 	ret
 COUNTER_UPDATE ENDP
 
-;обработчик
+;РѕР±СЂР°Р±РѕС‚С‡РёРє
 INTERRUPTION  PROC Far
 	jmp st_end
 	PSP_START DW (?)
