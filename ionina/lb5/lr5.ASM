@@ -10,11 +10,9 @@ INTERRUPTION PROC FAR
 	IP_KEEP dw ?
 	CS_KEEP dw ?
 	ID dw 3452h
-
 	SS_KEEP dw ?
 	SP_KEEP dw ?
 	AX_KEEP dw ?
-
 	REQ_KEY db 3bh
 	dw 32 dup()
 	END_STACK dw ? 
@@ -23,7 +21,6 @@ INTERRUPTION PROC FAR
 	mov SS_KEEP, ss
 	mov SP_KEEP, sp
 	mov AX_KEEP, ax
-
 	mov ax, cs
 	mov ss, ax
 	mov sp, offset END_STACK
@@ -36,10 +33,11 @@ INTERRUPTION PROC FAR
 	push ds
 	
 	in al,60h
-    cmp al,REQ_KEY
-    je req_start
-    call dword ptr cs:IP_KEEP
-    jmp endl_int
+	
+    	cmp al,REQ_KEY
+   	je req_start
+    	call dword ptr cs:IP_KEEP
+    	jmp endl_int
 
 	req_start:
 	in al,61H 
@@ -104,8 +102,8 @@ LOADING proc near
 	shr dx,cl
 	inc dx
 	mov ax,cs
-    sub ax,PSP
-    add dx,ax
+    	sub ax,PSP
+    	add dx,ax
 	mov al,0
 	mov AH,31h
 	
@@ -184,7 +182,6 @@ UNLOADING proc
 	ret
 UNLOADING endp
 ;--------------------------------------------
-; КОД
 MAIN PROC FAR
 	mov ax, DATA
 	mov ds, ax
