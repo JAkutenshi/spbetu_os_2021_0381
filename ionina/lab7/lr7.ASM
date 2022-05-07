@@ -35,16 +35,16 @@ DTA_ PROC
 DTA_ ENDP
 
 WRITE PROC NEAR
-	push AX
-	mov AH, 09h
-	int 21h
-	pop AX
-	ret
+    push AX
+    mov AH, 09h
+    int 21h
+    pop AX
+    ret
 WRITE ENDP
 
 FREE_MEMORY PROC
     mov BX, offset ENDL
-   	mov AX, ES
+    mov AX, ES
     sub BX, AX
     mov CL, 4
     shr BX, CL
@@ -110,23 +110,23 @@ fin_move:
 PATH_GET ENDP
 
 ALLOCATE_MEMORY_OVL PROC
-	push DS
-	push DX
+    push DS
+    push DX
     push CX
     xor CX, CX
-	mov DX, offset PATH_
+    mov DX, offset PATH_
     mov AH, 4Eh
     int 21h
     jnc m2
     cmp AX, 3
-	mov DX, offset PATH_ERROR
+    mov DX, offset PATH_ERROR
     je m1
-	mov DX, offset FILE_ERROR
+    mov DX, offset FILE_ERROR
 m1:
     call WRITE
     pop CX
     pop DX
-   	pop DS
+    pop DS
     xor AL, AL
     mov AH, 4Ch
     int 21h
