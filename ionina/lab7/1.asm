@@ -1,25 +1,25 @@
 OVL SEGMENT
     ASSUME CS:OVL, DS:NOTHING, SS:NOTHING, ES:NOTHING
 Main PROC FAR
-    push DS
-    push AX
-    push DI
-    push DX
-    push BX
-   	mov DS, AX
-    mov BX, offset SEGMENT_ADDRESS
-    add BX, 21
-    mov DI, BX
-    mov AX, CS
-    call WRD_TO_HEX
-    mov DX, offset SEGMENT_ADDRESS
-    call WRITE
-    pop BX
-    pop DX
-    pop DI
-    pop AX
-    pop DS
-    retf
+	push DS
+   	push AX
+    	push DI
+    	push DX
+    	push BX
+    	mov DS, AX
+    	mov BX, offset SEGMENT_ADDRESS
+    	add BX, 21
+   	mov DI, BX
+   	mov AX, CS
+    	call WRD_TO_HEX
+    	mov DX, offset SEGMENT_ADDRESS
+    	call WRITE
+    	pop BX
+    	pop DX
+    	pop DI
+    	pop AX
+   	pop DS
+    	retf
 Main ENDP
 
 SEGMENT_ADDRESS  db ' Segment address:   h',0DH,0AH,'$'
@@ -30,7 +30,7 @@ TETR_TO_HEX PROC near
 	jbe cont
 	add AL, 07
 cont:	
-    add AL, 30h
+    	add AL, 30h
 	ret
 TETR_TO_HEX ENDP
 
