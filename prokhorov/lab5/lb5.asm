@@ -49,11 +49,11 @@ push DS
 	
 in AL, 60h
 cmp AL, REQ_KEY
-je new_int
+je start
 call dword ptr CS:KEEP_IP
-jmp pre_end
+jmp pops
 	
-new_int:
+start:
 	in AL, 61H 
 	mov AH, AL 
 	or AL, 80h 
@@ -63,19 +63,19 @@ new_int:
 	mov AL, 20H
 	out 20H, AL
  
-read:
+write:
 	mov AH, 05h 
 	mov CL, 'S' 
 	mov CH, 00h 
 	int 16h 
 	or AL, AL 
-	jz pre_end
+	jz pops
 	mov AH, 0ch
 	mov AL, 00h
 	int 21h
-	jmp read
+	jmp write
 	
-pre_end:	
+pops:	
 	pop DS
 	pop BP
 	pop DI
