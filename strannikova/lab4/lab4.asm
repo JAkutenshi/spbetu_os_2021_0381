@@ -225,7 +225,7 @@ UNLOAD PROC NEAR
 	push SI
 	call ALREADY_LOADED
 	cmp CL, 1h
-	jne NOT_LOADED_STR
+	jne not_loaded
 	cli
 	push DS
 	push ES
