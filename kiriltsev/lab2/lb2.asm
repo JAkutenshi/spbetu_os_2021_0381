@@ -96,20 +96,21 @@ GetSegEnvProcAdress ENDP
 ;-------------------------------
 
 GetCommandLineTail PROC near
-	sub al, al
-	mov al, ds:[80h]
-	cmp al, 0h
-	je empty_tail
+	sub cx, cx
+	mov cl, ds:[80h]
 	mov si, offset CLT
-	add si, 0Fh 
+	add si, 0Fh
+	cmp cl, 0h
+	je empty_tail
+	sub di, di
+	sub ax, ax
 	cycle:
-		cmp al, 0h
-		je not_empty
-		dec al
-		mov bl, ds:[81h+di]
+		mov al, ds:[81h+di]
 		inc di
-		mov [si], bl
+		mov [si], al
 		inc si
+		loop cycle
+		jmp not_empty
 	empty_tail:
 		mov dx, offset EMPTYCLT
 		jmp ending
