@@ -1,10 +1,14 @@
+un_offset equ 2h
+env_offset equ 2ch
+tail_size equ 80h
+tail_offset equ 81h
 programm segment
   assume cs:programm, ds:programm, es:nothing, ss:nothing
   org 100h
 start: jmp begin
 
-mem_seg db 'Lock memory adress:     h', 0dh,0ah,'$'
-seg_prog db 'Environment segment adress:     h', 0dh,0ah,'$'
+mem_seg db 'Lock memory adress: 0000h', 0dh,0ah,'$'
+seg_prog db 'Environment segment adress: 0000h', 0dh,0ah,'$'
 cmd_tail db 'Command line tail:   ', 0dh, 0ah, '$'
 empty_cmd_tail db 'Command line tail is empty', 0dh,0ah,'$'
 space_symb db 'Environment symbols:', 0dh, 0ah, '$'
@@ -53,6 +57,8 @@ WRD_TO_HEX PROC near
 WRD_TO_HEX ENDP
 
 print proc near
+  add di, dx
+  call WRD_TO_HEX
   mov ah,09h
   int 21H
   ret
@@ -66,89 +72,80 @@ endline proc near
   ret
 endline endp
 
+print_str proc
+  push ds
+  mov ax,es
+  mov ds,ax
+  mov ah,02h
+  cycle:
+  lodsb
+  mov dl,al
+  cmp dl,0
+  je p_end
+  int 21h
+  loop cycle
+  p_end:
+  pop ds
+  ret
+print_str endp
+
 begin:
 ;1
-    mov ax, ds:[2]
-    mov di, offset mem_seg
-    add di, 23
-    call WRD_TO_HEX
+    mov di,23
     mov dx, offset mem_seg
+    mov ax,ds:[un_offset]
     call print
 ;2
-    mov ax, ds:[2ch]
-    mov di, offset seg_prog
-    add di, 31
-    call WRD_TO_HEX
+    mov di,31
     mov dx, offset seg_prog
+    mov ax,ds:[env_offset]
     call print
-;3
-    xor cx,cx
-    mov cl, ds:[80h]
-    mov si, offset cmd_tail
-    add si,21
-    cmp cl,0
-    je p2
-    xor di,di
-    xor ax,ax
-    p1:
-      mov al, ds:[81h+di]
-      inc di
-      mov [si],al
-      inc si
-      loop p1
-      mov dx, offset cmd_tail
-      jmp pend
-    p2:
-      mov dx,offset empty_cmd_tail
-    pend:
-      call print
 
-;4,5
+    mov ah,09h
+    mov dx, offset cmd_tail
+    int 21h
+
+    mov si, tail_offset
+    mov cl, ds:[tail_size]
+    call print_str
+
+    mov ah,09h
+    mov dx,offset line
+    int 21h
+
+    mov ah,09h
     mov dx,offset space_symb
-    call print
-    xor di,di
-    mov ds, ds:[2ch]
-    r:
-      cmp byte ptr [di], 00h
-      jz e_s
-      mov dl, [di]
-      mov ah, 02h
-      int 21h
-      jmp fe
-    e_s:
-      cmp byte ptr [di+1],00h
-      jz fe
-      push ds
-      mov cx,cs
-      mov ds,cx
-      mov dx, offset line
-      call print
-      pop ds
-    fe:
-      inc di
-      cmp word ptr [di], 001h
-      jz rp
-      jmp r
-    rp:
-      push ds
-      mov ax,cs
-      mov ds,ax
-      mov dx, offset modul_path
-      call print
-      pop ds
-      add di,2
-    lp:
-      cmp byte ptr[di],00h
-      jz f
-      mov dl, [di]
-      mov ah, 02h
-      int 21h
-      inc di
-      jmp lp
-    f:
+    int 21h
 
+    mov cx, -1
+    mov si, 0
+    mov es, ds:[env_offset]
+    cycle_env:
+    call print_str
+    mov ah,02h
+    mov dl,' '
+    int 21h
+    mov al,es:[si]
+    cmp al,0
+    jne cycle_env
+
+    mov ah,09h
+    mov dx,offset line
+    int 21h
+
+    mov ah,09h
+    mov dx,offset modul_path
+    int 21h
+
+    add si,3
+    call print_str
 ; Выход в DOS
 xor AL,AL
+
+;модификация
+mov ah,08h
+int 21h
+
 mov AH,4Ch
 int 21H
 programm ends
