@@ -8,8 +8,8 @@ START:
 
 ; data
 FB db 'First byte of forbidden to modify memory:     h', 13,10, '$'
-SEGMENT db 'segment of environment for process:     h', 13,10,'$'
-CONTAINS db 'CLT contains:                            ', 13,10,'$'
+S db 'segment of environment for process:     h', 13,10,'$'
+CONTAINS db 'CLT contains:$'
 EMPTY db 'Command-line tail is empty!', 13,10,'$'
 CONTENT db 13,10,'Content:',13,10, '$'
 END_OF_LINE db 13, 10, '$'
@@ -83,10 +83,10 @@ MEMADRESSFORB ENDP
 
 PROCADRESSENV PROC near
 	mov ax, ds:[2Ch]
-	mov di, offset SEGMENT
+	mov di, offset S
 	add di, 27h
 	call WRD_TO_HEX
-	mov dx, offset SEGMENT
+	mov dx, offset S
 	call output
 	ret
 PROCADRESSENV ENDP
@@ -94,27 +94,29 @@ PROCADRESSENV ENDP
 
 
 CMNDLINETAIL PROC near
-	sub al, al
-	mov al, ds:[80h]
-	cmp al, 0h
-	je empty_tail
-	mov si, offset CONTAINS
-	add si, 0Fh 
-	cycle:
-		cmp al, 0h
-		je not_empty
-		dec al
-		mov bl, ds:[81h+di]
-		inc di
-		mov [si], bl
-		inc si
+    mov BX, 81h
+    xor CX, CX
+    mov CL, ES:[80h]
+    cmp CL, 0
+	je empty_tail 
+	mov dx, offset CONTAINS
+	call output
+	mov ah, 02h
+TAIL:
+    mov DL, ES:[BX]
+    int 21h
+    inc BX
+    loop TAIL
+    
+	mov DL, 0Dh
+    int 21h
+    mov DL, 0AH
+    int 21h
+	jmp ending
 	empty_tail:
 		mov dx, offset EMPTY
-		jmp ending
-	not_empty:
-		mov dx, offset CONTAINS
-	ending:
 		call output
+	ending:
 		ret
 CMNDLINETAIL ENDP
 
