@@ -10,8 +10,8 @@ DATA SEGMENT
     FRE_ERR  DB  13, 10, 'Free failed.$'
     OVL_ERR  DB  13, 10, 'Overlay call error.$'
     OVL_SUC  DB  13, 10, 'Ov executed.$'
-    OVRLAY1  DB  'F:\LB17.ovl', 0
-    OVRLAY2  DB  'F:\LB27.ovl', 0
+    OVRLAY1  DB  'LB17.ovl', 0
+    OVRLAY2  DB  'LB27.ovl', 0
     DTA      DB  44 dup (0)
     SAVE_SS  DW  0
     SAVE_SP  DW  0
