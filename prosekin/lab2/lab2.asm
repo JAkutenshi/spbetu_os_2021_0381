@@ -88,28 +88,30 @@ GetSegEnvProcAdress PROC near
 GetSegEnvProcAdress ENDP
 
 GetCommandLineTail PROC near
-	sub al, al
-	mov al, ds:[80h]
-	cmp al, 0h
-	je empty_tail
-	mov si, offset CLT
-	add si, 0Fh 
+	mov BX, 81h
+	xor CX, CX
+    mov CL, ES:[80h]
+    cmp CL, 0
+	je empty_cycle
+	mov dx, offset CLT
+	call out_print
+	mov ah, 02h
 	cycle:
-		cmp al, 0h
-		je not_empty
-		dec al
-		mov bl, ds:[81h+di]
-		inc di
-		mov [si], bl
-		inc si
-	empty_tail:
-		mov dx, offset EMPTYCLT
-		jmp ending
-	not_empty:
-		mov dx, offset CLT
-	ending:
-		call out_print
-		ret
+		mov DL, ES:[BX]
+	    int 21h
+	    inc BX
+	    loop cycle
+	  
+		mov DL, 0Dh
+	    int 21h
+	    mov DL, 0AH
+	    int 21h
+		jmp end_cycle
+		empty_cycle:
+			mov dx, offset EMPTYCLT
+			call out_print
+		end_cycle:
+			ret
 GetCommandLineTail ENDP
 
 
@@ -179,4 +181,4 @@ BEGIN:
 	int 21H
 
 TESTPC ENDS
-END START 
+END START
