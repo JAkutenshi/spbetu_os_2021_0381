@@ -161,7 +161,7 @@ unload:
     MOV AX, ES:[BX + 5]
     MOV DS, AX
     MOV AH, 25H
-    MOV AL, 1ch
+    MOV AL, 23h
     INT 21H
     POP DS
     mov ah, 49h
