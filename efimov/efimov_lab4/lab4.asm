@@ -218,8 +218,9 @@ LOAD_INTERRUPT ENDP
 ;-------------------------------
 
 UNLOAD_INTERRUPT PROC near
-   push ax
-   push si
+   push si 
+    push ax
+   
    
    call IS_LOAD
    cmp flag_load,1h
@@ -267,8 +268,9 @@ start_unload:
    lea dx,STR_IS_UNLOAD
    call WRITE_STRING
 unload_end:   
-   pop si
+   
    pop ax
+   pop si
    ret
 UNLOAD_INTERRUPT ENDP
 
@@ -283,12 +285,13 @@ Main      PROC  FAR
 
    call LOAD_FLAG
    cmp flag, 1h
-   je unload_interrupt
+   je unload_i
    call LOAD_INTERRUPT
    jmp CustomEnd
    
-unload_iterrupt:
+unload_i:
    call UNLOAD_INTERRUPT
+   jmp CustomEnd
    
 CustomEnd:  
    mov ah,4ch
@@ -297,7 +300,7 @@ Main      ENDP
 CODE      ENDS
 
 ASTACK    SEGMENT  STACK
-   DW 64 DUP(?)   
+   DW 128 DUP(?)   
 ASTACK    ENDS
 
 DATA      SEGMENT
