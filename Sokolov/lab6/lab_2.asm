@@ -1,179 +1,193 @@
 TESTPC SEGMENT
- ASSUME CS:TESTPC, DS:TESTPC, ES:NOTHING, SS:NOTHING
- ORG 100H
+
+ASSUME CS:TESTPC, DS:TESTPC, ES:NOTHING, SS:NOTHING
+ORG 100h
+
 START: 
-JMP BEGIN
-; ДАННЫЕ
-MEM db  'Segment address of inaccessible memory:     h', 0Dh, 0Ah, '$'
-ENVIRO db 'Segment address of environment:     h', 0Dh, 0Ah, '$'
-TAIL db  'Command line tail:', 0Dh, 0Ah, '$'
-ENVIRO_CONTENT db 'Contents of the environment area:', 0Dh, 0Ah, '$'
-MOD_PATH db 'Path of the loaded module: $'
-_S_N db 0Dh, 0Ah, '$' 
+	jmp BEGIN
+
+; data
+FMA db 'First byte of forbidden to modify memory:     h', 13,10, '$'
+SEP db 'segment of environment for process:     h', 13,10,'$'
+CLT db 'CLT contains:                            ', 13,10,'$'
+EMPTYCLT db 'Command-line tail is empty!', 13,10,'$'
+CONTENT db 13,10,'Content:',13,10, '$'
+ENDL db 13, 10, '$'
+PATH db 13,10,'Path:  ',13,10,'$'
+
+; Процедуры
+;-------------------------------
 
 TETR_TO_HEX PROC near
-	and AL,0Fh
-	cmp AL,09
-	jbe NEXT
-	add AL,07
-	NEXT: add AL,30h
-	ret
+   and AL,0Fh
+   cmp AL,09
+   jbe next
+   add AL,07
+next:
+   add AL,30h
+   ret
 TETR_TO_HEX ENDP
+
 ;-------------------------------
+
 BYTE_TO_HEX PROC near
-	; байт в AL переводится в два символа шестн. числа в AX
-	push CX
-	mov AH,AL
-	call TETR_TO_HEX
-	xchg AL,AH
-	mov CL,4
-	shr AL,CL
-	call TETR_TO_HEX ;в AL старшая цифра
-	pop CX ;в AH младшая
-	ret
+;байт в AL переводится в два символа шест. числа в AX
+   push CX
+   mov AH,AL
+   call TETR_TO_HEX
+   xchg AL,AH
+   mov CL,4
+   shr AL,CL
+   call TETR_TO_HEX ;в AL старшая цифра
+   pop CX ;в AH младшая
+   ret
 BYTE_TO_HEX ENDP
+
 ;-------------------------------
 WRD_TO_HEX PROC near
-	;перевод в 16 с/с 16-ти разрядного числа
-	; в AX - число, DI - адрес последнего символа
-	push BX
-	mov BH,AH
-	call BYTE_TO_HEX
-	mov [DI],AH
-	dec DI
-	mov [DI],AL
-	dec DI
-	mov AL,BH
-	call BYTE_TO_HEX
-	mov [DI],AH
-	dec DI
-	mov [DI],AL
-	pop BX
-	ret
+;перевод в 16 с/с 16-ти разрядного числа
+; в AX - число, DI - адрес последнего символа
+   push BX
+   mov BH,AH
+   call BYTE_TO_HEX
+   mov [DI],AH
+   dec DI
+   mov [DI],AL
+   dec DI
+   mov AL,BH
+   call BYTE_TO_HEX
+   mov [DI],AH
+   dec DI
+   mov [DI],AL
+   pop BX
+   ret
 WRD_TO_HEX ENDP
 
-PUTS PROC near
-	push ax
-	mov ah,09h
+;-------------------------------
+printer PROC near
+	mov AH,9h
 	int 21h
-	pop ax
 	ret
-PUTS ENDP
+printer ENDP
+;-------------------------------
 
-PUTC PROC near
-	push ax
+GetForbiddenMemAdress PROC near
+	mov ax, ds:[02h]
+	mov di, offset FMA
+	add di, 2Dh
+	call WRD_TO_HEX
+	mov dx, offset FMA
+	call printer
+	ret
+GetForbiddenMemAdress ENDP
+
+;-------------------------------
+
+GetSegEnvProcAdress PROC near
+	mov ax, ds:[2Ch]
+	mov di, offset SEP
+	add di, 27h
+	call WRD_TO_HEX
+	mov dx, offset SEP
+	call printer
+	ret
+GetSegEnvProcAdress ENDP
+
+;-------------------------------
+
+GetCommandLineTail PROC near
+	sub al, al
+	mov al, ds:[80h]
+	cmp al, 0h
+	je empty_tail
+	mov si, offset CLT
+	add si, 0Fh 
+	cycle:
+		cmp al, 0h
+		je not_empty
+		dec al
+		mov bl, ds:[81h+di]
+		inc di
+		mov [si], bl
+		inc si
+	empty_tail:
+		mov dx, offset EMPTYCLT
+		jmp ending
+	not_empty:
+		mov dx, offset CLT
+	ending:
+		call printer
+		ret
+GetCommandLineTail ENDP
+
+;-------------------------------
+
+GetEnvContent PROC near
+   mov dx, offset CONTENT
+   call printer
+   sub di, di
+   mov ds, ds:[2Ch]
+next_line:
+	cmp byte ptr [di], 00h
+	je line_end
+	mov dl, [di]
 	mov ah, 02h
 	int 21h
-	pop ax
+	jmp path_detected
+line_end:
+	cmp byte ptr [di+1],00h
+	je path_detected
+	push ds
+	mov cx, cs
+	mov ds, cx
+	mov dx, offset ENDL
+	call printer
+	pop ds
+path_detected:
+	inc di
+	cmp word ptr [di], 0001h
+	je content_end
+	jmp next_line
+content_end:
 	ret
-PUTC ENDP
+GetEnvContent ENDP
 
-PUTS_N PROC near
-	push dx
-	mov dx, offset _S_N
-	call PUTS
-	pop dx
-	ret
-PUTS_N ENDP
+;-------------------------------
 
-INACCESSIBLE_MEMORY PROC near
-	mov di, offset MEM
-	add di, 43
-	mov ax, ds:[2h]
-	call WRD_TO_HEX
-	mov [di], ax
-	mov dx, offset MEM
-	call PUTS
-	ret
-INACCESSIBLE_MEMORY ENDP
-
-ENVIRONMENT_ADDRESS PROC near
-	mov di, offset ENVIRO
-	add di, 35
-	mov ax, ds:[2Ch]
-	call WRD_TO_HEX
-	mov [di], ax
-	mov dx, offset ENVIRO
-	call PUTS
-	ret
-ENVIRONMENT_ADDRESS ENDP
-
-_TAIL PROC near
-	mov dx, offset TAIL
-	call PUTS
-	mov ah, 13h
-	mov cx, 0
-	mov cl, ds:[80h]
-	cmp cl, 0
-	je empty
-	lea di, ds:[81h]
-
-cycle:
+GetPath PROC near
+	push ds
+	mov ax, cs
+	mov ds, ax
+	mov dx, offset PATH
+	call printer
+	pop ds
+	add di, 2
+path_cyc:
+	cmp byte ptr [di], 00h
+	je complete
+	
 	mov dl, [di]
-	call PUTC
+	mov ah, 02h
+	int 21h
+	
 	inc di
-	loop cycle
-	call PUTS_N
-	jmp tail_end
-
-empty: 
-	call PUTS_N
-
-tail_end:
+	jmp path_cyc
+complete:
 	ret
-_TAIL ENDP
-	
-	
-ENVIRONMENTCONTENTS_MODULEPATH PROC near
-	mov dx, offset ENVIRO_CONTENT
-	call PUTS
-	mov es, ds:[2Ch]
-	mov di, 0
+GetPath ENDP
 
-reading:
-	mov dl, es:[di]
-	cmp dl, 0
-	jne read_content
-	call PUTS_N
-	inc di
-	mov dl, es:[di]
-	cmp dl, 0
-	je end_content
+;-------------------------------
 
-read_content:	
-	call PUTC
-	inc di
-	jmp reading
-	
-end_content:
-	add di, 3
-	mov dx, offset MOD_PATH
-	call PUTS
-	call PUTS_N
-
-read_path:	
-	mov dl, es:[di]
-	cmp dl, 0
-	je end_path
-	call PUTC
-	inc di
-	jmp read_path
-
-end_path:
-	ret
-ENVIRONMENTCONTENTS_MODULEPATH ENDP
-
-; КОД
+; Code
 BEGIN:
-	call INACCESSIBLE_MEMORY
-	call ENVIRONMENT_ADDRESS
-	call _TAIL
-	call ENVIRONMENTCONTENTS_MODULEPATH
-
-; Выход в DOS
-
+	call GetForbiddenMemAdress
+	call GetSegEnvProcAdress
+	call GetCommandLineTail
+	call GetEnvContent
+	call GetPath
 	xor AL,AL
 	mov AH,4Ch
 	int 21H
+
 TESTPC ENDS
-END START  
+END START

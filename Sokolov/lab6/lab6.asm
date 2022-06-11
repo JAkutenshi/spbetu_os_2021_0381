@@ -1,83 +1,131 @@
 aStack segment stack
-   dw 200 dup(?)   
+  dw  264 dup(?)
 aStack ends
 
 data segment
-   PB             dw 0 ;сегментный адрес среды
-                  dd 0 ;сегмент и смещение командной строки
-                  dd 0 ;сегмент и смещение FCB 
-                  dd 0 ;сегмент и смещение FCB 
-                  
-   keep_ss dw 0
-   keep_sp dw 0
-   
-   resident_file db 'lb2.COM$'
-   resident_path db 50 dup (0)
-   
-   mem_status_7 db 'CMB has been destroyed', 13, 10, '$'
-   mem_status_8 db 'Is not enough memory for function', 13, 10, '$'
-   mem_status_9 db 'Memory address is invalid', 13, 10, '$'
-   
-   err_1 db 'Function number error', 13, 10, '$'
-   err_2 db 'File not found', 13, 10, '$'
-   err_5 db 'Disk errror', 13, 10, '$'
-   err_8 db 'Low memory error', 13, 10, '$'
-   err_10 db 'Environment error', 13, 10, '$'
-   err_11 db 'Format error', 13, 10, '$'
-                        
-   termination_0 db 'Successful execution:        ', 13, 10, '$'
-   termination_1 db 'Ctrl-Break termination', 13, 10, '$'
-   termination_2 db 'Device err termination', 13, 10, '$'
-   termination_3 db '31h termination', 13, 10, '$'
+	PB db 14 dup()
 
+	resident_file db "lab_2.com", 0
+	resident_path db 50 dup(0)
+
+	keep_ss dw 0
+	keep_sp dw 0
+	
+	mem_status_7 db 'CMB has been destroyed', 13, 10, '$'
+	mem_status_8 db 'Is not enough memory for function', 13, 10, '$'
+	mem_status_9 db 'Memory address is invalid', 13, 10, '$'
+
+	error_1 db 'Function number error', 13, 10, '$'
+	error_2 db 'File not found', 13, 10, '$'
+	error_5 db 'Disk errror', 13, 10, '$'
+	error_8 db 'Low memory error', 13, 10, '$'
+	error_10 db 'Environment error', 13, 10, '$'
+	error_11 db 'Format error', 13, 10, '$'
+ 	
+	termination_0 db 13, 10, 'Successful execution:             ', 13, 10, '$'
+	termination_1 db 'Ctrl-Break termination', 13, 10, '$'
+	termination_2 db 'Device err termination', 13, 10, '$'
+	termination_3 db '31h termination', 13, 10, '$'
 data ends
 
 code segment
-   assume cs:code,  ds:data,  ss:aStack
+	assume ds:data, CS:code, SS:aStack	
 
-;--------------------------------
+;-------------------------------
+
+print proc near
+	mov ah,9h
+	int 21h
+	ret
+print endp
+;-------------------------------
+
 BYTE_TO_DEC proc near
-; перевод в 10с/с, si - адрес поля младшей цифры
-   push cx
-   push dx
-   xor ah,ah
-   xor dx,dx
-   mov cx,10
-loop_bd:
-   div cx
-   or dl,30h
-   mov [si],dl
-   dec si
-   xor dx,dx
-   cmp ax,10
-   jae loop_bd
-   cmp al,00h
-   je end_l
-   or al,30h
-   mov [si],al
-end_l:
-   pop dx
-   pop cx
-   ret
+	push CX
+	push DX
+	xor ah,ah
+	xor DX,DX
+	mov CX,10
+loop_bd: 
+	div CX
+	or DL,30h
+	mov [SI],DL
+	dec SI
+	xor DX,DX
+	cmp AX,10
+	jae loop_bd
+	cmp AL,00h
+	je end_l
+	or AL,30h
+	mov [SI],AL
+end_l: 
+	pop DX
+	pop CX
+	ret
 BYTE_TO_DEC endp
-;-------------------------------
-printer proc near
-   push ax
-   mov ah, 09h
-   int 21h
-   pop ax
-   ret
-printer endp
+;----------------------------
+
+get_resident_path proc near
+	push es
+	push si
+	push ax
+	sub si, si
+	mov es, es:[2Ch]
+	
+cycle:
+	mov al, es:[si]
+	inc si
+	cmp al, 0
+	jne cycle
+	mov al, es:[si]
+	cmp al, 0
+	jne cycle
+	
+	add si, 3	
+	push si
+add_slash:
+	cmp byte ptr es:[si], '\'
+	jne next
+	mov ax, si
+next:
+	inc si
+	cmp byte ptr es:[si], 0
+	jne add_slash
+	inc ax
+	pop si
+	mov di, 0
+
+get_fdir:	
+	mov bl, es:[si]
+	mov resident_path[di], bl
+	inc si
+	inc di
+	cmp si, ax
+	jne get_fdir
+	
+	mov si, 0
+get_fname:
+	mov bl, resident_file[si]
+	mov resident_path[di], bl
+	inc si
+	inc di
+	cmp bl, 0
+	jne get_fname
+	pop ax
+	pop si
+	pop es
+	ret
+get_resident_path endp
 ;-------------------------------
 
-mem_resize proc
+mem_resize proc near
    push ax
    push bx
    
-   lea bx, host_end
+   lea bx, end_prm
    mov ax, es
    sub bx, ax
-   mov ax, bx
+   ;mov ax, bx
    shr bx, 1
    shr bx, 1
    shr bx, 1
@@ -100,196 +148,98 @@ mem_resize proc
    jmp mem_resize_end
    
 mem_status_print:
-   call printer
+   call print
    
 mem_resize_end:   
    pop bx
    pop ax
    ret
 mem_resize endp
-;---------------------------------
-PB_config proc near
-   mov ax, es:[2ch]
-   mov PB, ax
-   mov PB+2, es
-   mov PB+4, 80h
-   ret
-PB_config endp
-;---------------------------------
-get_path proc near
-   push dx
-   push di
-   push si
-   push es
-   
-   sub di, di
-   mov es, es:[2ch]
-   
-next:
-   mov dl, es:[di]
-   cmp dl, 0h
-   je last
-   inc di
-   jmp next
-      
-last:
-   inc di
-   mov dl, es:[di]
-   cmp dl, 0h
-   jne next
-   
-   add di, 3
-   mov si, 0
-   
-write_path:
-   mov dl, es:[di]
-   cmp dl, 0
-   je clear_filename
-   mov resident_path[si], dl
-   inc di
-   inc si
-   jmp write_path
+;-------------------------------
 
-clear_filename:
-   dec si
-   cmp resident_path[si], '\'
-   je set_filename_init
-   jmp clear_filename
-   
-set_filename_init:
-   mov di, -1
-
-set_filename:
-   inc si
-   inc di
-   mov dl,resident_file[di]
-   cmp dl,'$'
-   je get_path_end
-   mov resident_path[si],dl
-   jmp set_filename
-   
-get_path_end:
-   pop es
-   pop si
-   pop di
-   pop dx
-   ret
-get_path endp
-;---------------------------------
 resident proc near
+
    push ds
    push es
-   
-   mov keep_sp, sp
+   mov word ptr PB[2], es
+   mov word ptr PB[4], 80h
+	
+	
+   mov ax,ds
+   mov es,ax
+   mov dx,offset resident_path
+   mov bx,offset PB
    mov keep_ss, ss
-   mov ax, ds
-   mov es, ax
-   
-   lea dx, resident_path
-   lea bx, PB
+   mov keep_sp, sp
    mov ax, 4B00h
    int 21h
-   
    mov ss, keep_ss
    mov sp, keep_sp
-   
    pop es
-   pop ds  
-   
-   push dx
-   push ax
-   
-   mov dl, 10
-   mov ah, 2
-   int 21h
-
-   mov dl, 13
-   mov ah, 2
-   int 21h  
-   
-   pop ax
-   pop dx
-
-   call get_status
-   ret
-resident endp
-;---------------------------------
-get_status proc
-   push dx
-   push ax
-   push si
-   
-   jc bad_exec
- 
-   mov ax, 4D00h
-   int 21h
-
-   lea dx, termination_1
-   cmp ah, 1
-   je print_message
-   lea dx, termination_2
-   cmp ah, 2
-   je print_message
-   lea dx, termination_3
-   cmp ah, 3
-   je print_message
-   cmp ah, 0
-   jne get_status_end
-   
-   lea dx, termination_0
-   mov si, dx
-   add si, 28  
-   call BYTE_TO_DEC
- 
-   jmp print_message
-   
-bad_exec: 
-   
-   lea dx, err_1
+   pop ds
+	
+   jnc program_exit
+   ;mov cx, 0
+	
+   lea dx, error_1
    cmp ax, 1
    je print_message
-   lea dx, err_2
+   lea dx, error_2
    cmp ax, 2
    je print_message   
-   lea dx, err_5
+   lea dx, error_5
    cmp ax, 5
    je print_message   
-   lea dx, err_8
+   lea dx, error_8
    cmp ax, 8
    je print_message   
-   lea dx, err_10
+   lea dx, error_10
    cmp ax, 10
    je print_message
-   lea dx, err_11
+   lea dx, error_11
    cmp ax, 11
    je print_message
    
+program_exit:
+   mov ah, 4dh
+   int 21h	
+   mov dx, offset termination_1
+   cmp ah, 1
+   je print_message
+   mov dx, offset termination_2
+   cmp ah, 2
+   je print_message
+   mov dx, offset termination_3
+   cmp ah, 3
+   je print_message	
+   mov si, offset termination_0
+   add si, 34
+   call BYTE_TO_DEC
+   mov dx, offset termination_0
+   jmp print_message
+
 print_message:
-   call printer
+   call print
 
-get_status_end:   
-   pop si
-   pop ax
-   pop si
-   ret
-get_status endp
-;---------------------------------
+end_call_program:
+	ret
+resident endp
+;-------------------------------
+
 Main proc far
-   sub   ax, ax
-   push  ax
-   mov   ax, data
-   mov   ds, ax
-   
-   call mem_resize
-   call PB_config
-   call get_path
-   call resident
-   
-   sub al, al
-   mov ah, 4Ch
-   int 21h
+begin:
+	mov ax, data  
+	mov ds, ax	
+	call get_resident_path
+	call mem_resize
+	call resident
 
-Main endp
-host_end:
-code ends
+end_main:
+	sub al, al
+	mov ah, 4Ch
+	int 21H 
+
+end_prm:
+Main      endp
+code      ends
 end Main
