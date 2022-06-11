@@ -186,6 +186,8 @@ BEGIN:
 	call GetEnvContent
 	call GetPath
 	xor AL,AL
+	MOV AH, 01h
+	int 21H
 	mov AH,4Ch
 	int 21H
 

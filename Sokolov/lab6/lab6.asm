@@ -213,8 +213,8 @@ program_exit:
    cmp ah, 3
    je print_message	
    mov si, offset termination_0
-   add si, 34
-   call BYTE_TO_DEC
+   add si, 32
+   mov [si], al
    mov dx, offset termination_0
    jmp print_message
 
