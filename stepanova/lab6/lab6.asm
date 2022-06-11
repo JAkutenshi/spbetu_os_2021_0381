@@ -48,7 +48,7 @@ BYTE_TO_DEC PROC near
 BYTE_TO_DEC ENDP
 
 PRINTSTR PROC NEAR
-   push dsS
+   push ds
    mov ax,es
    mov ds,ax
    mov ah,02h
